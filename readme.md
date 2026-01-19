@@ -1,195 +1,103 @@
 # Awesome Selfhosted Monitor
 
-This AutoKitteh project monitors the [awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted/) GitHub repository for new software additions and sends formatted notifications to Telegram.
+A lightweight Python-based monitoring tool that tracks the [awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted) repository. It identifies newly added projects by comparing the current `README.md` against a local state and sends detailed notifications directly to your Telegram.
 
-## Overview
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-The workflow automatically:
+## ✨ Features
 
-1. Detects push events to the awesome-selfhosted repository
-2. Analyzes git diffs to identify new lines added to README.md
-3. Parses the markdown format to extract project details
-4. Sends formatted Telegram notifications for each newly added software entry
+- **Automated Tracking**: Periodically checks for changes in the master list.
+- **Smart Diffing**: Intelligently extracts only the newly added lines.
+- **Rich Notifications**: Parses Markdown entries to send clean Telegram alerts including:
+  - Project Name & Link
+  - Description
+  - Demo and Source Code links (if available)
+  - License and Deployment info (Docker, etc.)
+- **API Friendly**: Uses GitHub's raw content URLs to avoid GitHub API rate limiting.
+- **State Management**: Maintains a local copy of the README to ensure you never get duplicate alerts.
 
-Only additions are processed - modifications and deletions are ignored.
+## 🚀 Getting Started
 
-## Features
+### 1. Prerequisites
 
-- **Real-time monitoring**: Triggers on every push to the repository
-- **Smart parsing**: Extracts project name, URL, description, demo link, source code link, license, and deployment method
-- **Formatted notifications**: Sends clean, readable messages to Telegram
-- **Selective processing**: Only processes new additions, ignoring edits and deletions
+- Python 3.10 or higher.
+- A Telegram Bot (created via [@BotFather](https://t.me/botfather)).
+- Your Telegram User ID (can be found via [@userinfobot](https://t.me/userinfobot)).
 
-## Configuration
+### 2. Installation
 
-### Connections
-
-You need to configure two connections:
-
-#### 1. GitHub Connection (`github_conn`)
-
-This connection monitors the awesome-selfhosted repository for push events.
-
-**Setup:**
-
-1. In the AutoKitteh UI, create a new GitHub connection named `github_conn`
-2. Authenticate with your GitHub account
-3. The connection will automatically receive webhook events from the repository
-
-#### 2. Telegram Connection (`telegram_conn`)
-
-This connection sends notifications to your Telegram channel or chat.
-
-**Setup:**
-
-1. Create a Telegram bot using [@BotFather](https://t.me/botfather)
-2. Get your bot token
-3. In the AutoKitteh UI, create a new Telegram connection named `telegram_conn`
-4. Configure the bot token
-5. **Important**: Update the `chat_id` in `program.py` (line 145) with your target channel or chat ID
-   - For channels: Use `@channel_name` or the numeric channel ID
-   - For private chats: Use the numeric chat ID
-   - To find your chat ID, you can use [@userinfobot](https://t.me/userinfobot)
-
-### Environment Variables
-
-No additional environment variables are required. All configuration is done through connections.
-
-## Deployment
-
-1. Ensure you have the AutoKitteh CLI installed
-2. Configure both connections as described above
-3. Update the `chat_id` in `program.py` with your Telegram destination
-4. Deploy the project:
+Clone this repository and navigate to the project folder:
 
 ```bash
-ak deploy --manifest autokitteh.yaml
+git clone https://github.com/yourusername/ash-monitor.git
+cd ash-monitor
 ```
 
-## Workflow Diagram
+Create a virtual environment and install dependencies:
 
-```mermaid
-sequenceDiagram
-    participant GH as GitHub Repository<br/>(awesome-selfhosted)
-    participant AK as AutoKitteh
-    participant Code as Workflow Code
-    participant TG as Telegram
-
-    Note over GH: Push event occurs<br/>(commit to repository)
-    GH->>AK: Webhook: push event
-    AK->>Code: Trigger session with event data
-
-    Code->>GH: Fetch commit diff
-    GH-->>Code: Return diff data
-
-    Note over Code: Filter for README.md changes
-    Note over Code: Extract only added lines (+)
-
-    loop For each new line added
-        Note over Code: Parse markdown format:<br/>- Project name & URL<br/>- Description<br/>- Demo link (optional)<br/>- Source Code link (optional)<br/>- License & deployment
-
-        Code->>TG: Send formatted notification
-        TG-->>Code: Confirmation
-    end
-
-    Note over Code: Session complete
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## Example Notification
+### 3. Configuration
 
-When a new software entry is added, you'll receive a Telegram message like:
+Create a `.env` file in the root directory:
 
-```
-🆕 New Software Added to awesome-selfhosted
+```ini
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN=123456789:ABCDefGhIJKlmNoPQRstuVwXyz
+TELEGRAM_CHAT_ID=987654321
 
-*ProjectName*
-🔗 https://project-url.com
-
-📝 A brief description of the project and its features.
-
-🎮 Demo: https://demo.project-url.com
-💻 Source: https://github.com/user/project
-📜 License: `MIT`
-🚀 Deployment: `Docker`
+# Optional Customization
+STATE_DIR=./state
+GITHUB_OWNER=awesome-selfhosted
+GITHUB_REPO=awesome-selfhosted
+GITHUB_BRANCH=master
 ```
 
-## How It Works
+## 🛠 Usage
 
-### 1. Event Detection
+To run the script manually:
 
-The workflow is triggered by GitHub push events filtered to only the `awesome-selfhosted/awesome-selfhosted` repository.
-
-### 2. Commit Processing
-
-For each commit in the push:
-
-- Fetches the full commit details via GitHub API
-- Checks if README.md was modified
-- Extracts the git diff patch
-
-### 3. Diff Analysis
-
-- Parses the patch to find lines starting with `+` (additions)
-- Filters out the `+++` header lines
-- Processes only genuinely new content
-
-### 4. Markdown Parsing
-
-Uses regex patterns to extract:
-
-- Project name and URL from `[Name](URL)` format
-- Description text
-- Optional demo link from `[Demo](URL)`
-- Optional source code link from `[Source Code](URL)`
-- License information from backticks
-- Deployment method from backticks
-
-### 5. Notification
-
-Sends a formatted Markdown message to Telegram with all extracted information.
-
-## Customization
-
-### Modify Notification Format
-
-Edit the `send_telegram_notification()` function in `program.py` to change the message format.
-
-### Change Target Repository
-
-Update the filter in `autokitteh.yaml`:
-
-```yaml
-filter: data.repository.full_name == "owner/repository"
+```bash
+python app.py
 ```
 
-### Add Additional Processing
+### First Run Behavior
 
-You can extend the workflow to:
+On the first execution, the script will download the current `README.md` and save it as a "baseline" in the `/state` folder. **It will not send notifications for existing projects.** Notifications will only trigger when the remote file changes after the baseline is established.
 
-- Store entries in a database
-- Send notifications to multiple channels
-- Filter by specific categories or tags
-- Perform additional validation
+## 🕒 Automation (Windows Deployment)
 
-## Troubleshooting
+To have this run automatically on Windows without keeping a console window open:
 
-### No notifications received
+1. Create a file named `run_monitor.bat`:
 
-- Verify the GitHub connection is active and receiving events
-- Check that the `chat_id` in `program.py` is correct
-- Review the AutoKitteh session logs for errors
+```batch
+@echo off
+cd /d "C:\Path\To\Your\Project"
+".\venv\Scripts\pythonw.exe" "app.py"
+```
 
-### Parsing errors
+2. Open **Windows Task Scheduler**.
+3. Create a **Basic Task** named "ASH Monitor".
+4. Set the Trigger to **Daily** or **Multiple times a day**.
+5. Set the Action to **Start a Program** and point it to your `.bat` file.
+6. Under properties, select **Run whether user is logged on or not** to run it silently in the background.
 
-- The markdown format in awesome-selfhosted may vary
-- Check the session logs to see which lines failed to parse
-- Adjust the regex patterns in `parse_markdown_entry()` if needed
+## 📦 How it Works
 
-### Missing information in notifications
+1. **Fetch**: Downloads the latest `README.md` from the GitHub master branch.
+2. **Compare**: Uses `difflib` to compare the new version against the last saved version.
+3. **Parse**: Uses Regex to extract metadata (links, descriptions, tags) from the specific Markdown formatting used in the Awesome list.
+4. **Notify**: Uses an asynchronous Telegram client to push alerts to your device.
 
-- Some entries may not include all optional fields (demo, source, etc.)
-- The parser handles missing fields gracefully by showing only available information
+## 📜 License
 
-## License
+This project is open-source and available under the [MIT License](LICENSE).
 
-This project is provided as-is for use with AutoKitteh.
+---
+*Disclaimer: This project is not officially affiliated with the awesome-selfhosted maintainers.*
