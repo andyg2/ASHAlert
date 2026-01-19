@@ -77,7 +77,15 @@ On the first execution, the script will download the current `README.md` and sav
 
 ## 🕒 Automation (Windows Deployment)
 
-To have this run automatically on Windows without keeping a console window open:
+To have this run automatically on Windows without keeping a console window open use pythonw
+
+### Import the Sample Task
+
+Open Task Scheduler in Windows and import the scheduled-task-sample.xml
+
+### Manual Setup
+
+Set up a batch file to lanch the script
 
 1. Create a file named `run_monitor.bat`:
 
