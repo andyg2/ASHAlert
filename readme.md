@@ -66,6 +66,11 @@ To run the script manually:
 python app.py
 ```
 
+### Example Telegram Alert
+
+<img width="467" height="602" alt="ash-alert" src="https://github.com/user-attachments/assets/81e01cec-b090-47a0-a1f0-c7bd3e8fc21d" />
+
+
 ### First Run Behavior
 
 On the first execution, the script will download the current `README.md` and save it as a "baseline" in the `/state` folder. **It will not send notifications for existing projects.** Notifications will only trigger when the remote file changes after the baseline is established.
