@@ -1,4 +1,4 @@
-# Awesome Selfhosted Monitor
+# Awesome Selfhosted New Software Alert
 
 A lightweight Python-based monitoring tool that tracks the [awesome-selfhosted](https://github.com/awesome-selfhosted/awesome-selfhosted) repository. It identifies newly added projects by comparing the current `README.md` against a local state and sends detailed notifications directly to your Telegram.
 
